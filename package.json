@@ -1,10 +1,21 @@
 {
     "name": "riot",
     "displayName": "RIOT",
-    "description": "RIOT vscode extension",
+    "description": "RIOT integrated development for Visual Studio Code",
     "version": "0.0.1",
-    "publisher": "attilio.dona",
+    "publisher": "attdona",
     "license": "MIT",
+    "author": {
+        "name": "Attilio Donà",
+        "url": "https://github.com/attdona"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/attdona/riot-code"
+    },
+    "bugs": {
+        "url": "https://github.com/attdona/riot-code/issues"
+    },
     "engines": {
         "vscode": "^1.19.0"
     },
@@ -17,7 +28,7 @@
         "riot"
     ],
     "preview": true,
-    "homepage": "https://github.com/attdona/vscode-riot",
+    "homepage": "https://github.com/attdona/riot-code",
     "icon": "images/logo.png",
     "galleryBanner": {
         "color": "#ffdd00"
@@ -32,16 +43,24 @@
             {
                 "title": "RIOT-OS",
                 "properties": {
+                    "riot.compiler": {
+                        "type": "string",
+                        "description": "compiler name used for retrieving system includes",
+                        "default": "gcc"
+                    },
                     "riot.board": {
                         "type": "string",
+                        "description": "RIOT target board",
                         "default": "native"
                     },
                     "riot.build_dir": {
                         "type": "string",
+                        "description": "make working dir",
                         "default": "examples/hello-world"
                     },
                     "riot.quiet": {
                         "type": "string",
+                        "description": "verbose output setting",
                         "default": "QUIET=0"
                     }
                 }

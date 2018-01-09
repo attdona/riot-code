@@ -32,8 +32,10 @@ function get_system_includes() {
     let match: RegExpExecArray;
     let sys_includes = new Set();
 
+    const compiler = vscode.workspace.getConfiguration().get('riot.compiler');
+
     // https://stackoverflow.com/questions/17939930/finding-out-what-the-gcc-include-path-is
-    let out = shell.exec("arm-none-eabi-gcc -E -Wp,-v -xc /dev/null").stderr
+    let out = shell.exec(compiler+" -E -Wp,-v -xc /dev/null").stderr
 
     let lines = out.split('\n');
     let re = /^(\s)([^\s]+)+$/;
@@ -43,7 +45,6 @@ function get_system_includes() {
             let pitems = match[2].split(path.sep);
 
             // let idir = path.join.apply(null, pitems);
-
             let idir = pitems.reduce((acc, part) => (path.join(acc, part)), path.sep);
             sys_includes.add(idir);
         }
@@ -167,8 +168,6 @@ function build_tasks() {
     tasks.tasks[1].label = "flash: " + app_name;
     tasks.tasks[2].label = "clean: " + app_name;
 
-    console.log(path.join(vscode.workspace.rootPath, ".vscode", "tasks.json"));
-
     mkdirp(path.join(vscode.workspace.rootPath, ".vscode"), (err) => {
         if (err) {
             console.error(err);
@@ -271,7 +270,6 @@ export function activate(context: vscode.ExtensionContext) {
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
     let disposable = vscode.commands.registerCommand('extension.riotInit', () => {
-        console.log("XXXXXXXXXXXXXX");
         // The code you place here will be executed every time your command is executed
 
         setup();

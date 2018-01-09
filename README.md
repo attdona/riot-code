@@ -1,38 +1,34 @@
-# Developing RIOT apps with vscode 
+# A simple vscode extension for RIOT
 
-This is a no-frills and (currently) a minimalist extension with the aim to ease the setup of vscode for RIOT-based development.  
+This is an initial version that has been tested on ubuntu 16.04 and 17.10 with `arm-none-eabi-gcc` cross compiler.
 
-As prerequisite install [C/C++ for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools) extension.
+![demo](https://raw.githubusercontent.com/attdona/riot-code/blob/master/images/riot-code.gif)
 
+## Prerequisite
+
+[C/C++ for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools) is a required extension.
 
 ## Getting started
 
-This is an initial effort that has tested on ubuntu machine and arm gcc environment.
+`native` is the default `board` and `examples/hello-world` is the default build directory.
 
-Please fill an issue/PR to give feedback and improve the tool.
+To change these properties:
+* open Settings (keyboard `Ctrl+,` or menu `File->Preferences->Settings`) and search `RIOT-OS` section
+* modify `riot.board` and `riot.build_dir` with your values.
+* change `compiler` value with your toolchain compiler executable (the only tested cross compiler is `arm-none-eabi-gcc`)
 
-Before publishing to marketplace if you like give a try installing with:
+Press `F1` or `Ctrl+Shift+P` and run the command `RIOT init` to create both the project configuration and the three tasks:
 
-    > cd $HOME/.vscode/extensions # vscode extensions dir on linux
-    > git clone  https://github.com/attdona/riot-code
+* build: *app_name*
+* clean: *app_name*
+* flash: *app_name*
 
-    > cd <your_path_to>/RIOT # RIOT base dir
-    > code . 
+where *app_name* is the directory basename of `riot.build_dir`.
 
-For default BOARD is set to `native` and the build directory to `examples/hello-world`.
-To change this default setting open Settings (keyboard `Ctrl+,` or menu `File->Preferences->Settings`) and search `RIOT-OS` section.
+Select `Tasks->Run Tasks` to run the tasks.
 
-Modify `riot.board` and `riot.build_dir` with your values;
-Press `F1` or `Ctrl+Shift+P` and select command `RIOT init`:
+**NOTE**: If you change `riot.board` or/and `riot.build_dir` rerun `RIOT init` command.
 
-`RIOT init` setup the right configuration (check `.vscode/c_cpp_properties.json`) and creates three tasks:
-
-1. build: <app_name>
-2. clean: <app_name>
-3. flash: <app_name>
-
-To run these tasks select `Tasks->Run Tasks`
+Fill an issue or post a PR to help improving the tool.
 
 Enjoy RIOT coding with vscode!
-
-
