@@ -1,0 +1,74 @@
+{
+    "name": "riot",
+    "displayName": "RIOT",
+    "description": "RIOT vscode extension",
+    "version": "0.0.1",
+    "publisher": "attilio.dona",
+    "license": "MIT",
+    "engines": {
+        "vscode": "^1.19.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "keywords": [
+        "c",
+        "iot",
+        "riot"
+    ],
+    "preview": true,
+    "homepage": "https://github.com/attdona/vscode-riot",
+    "icon": "images/logo.png",
+    "galleryBanner": {
+        "color": "#ffdd00"
+    },
+
+    "activationEvents": [
+        "onCommand:extension.riotInit"
+    ],
+    "main": "./out/extension",
+    "contributes": {
+        "configuration": [
+            {
+                "title": "RIOT-OS",
+                "properties": {
+                    "riot.board": {
+                        "type": "string",
+                        "default": "native"
+                    },
+                    "riot.build_dir": {
+                        "type": "string",
+                        "default": "examples/hello-world"
+                    },
+                    "riot.quiet": {
+                        "type": "string",
+                        "default": "QUIET=0"
+                    }
+                }
+            }
+        ],
+        "commands": [
+            {
+                "command": "extension.riotInit",
+                "title": "RIOT init"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "npm run compile && node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "typescript": "^2.6.1",
+        "vscode": "^1.1.6",
+        "@types/node": "^7.0.43",
+        "@types/mocha": "^2.2.42"
+    },
+    "dependencies": {
+        "shelljs": "0.7.8",
+        "mkdirp" : "0.5.1"
+    }
+}
