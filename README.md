@@ -2,7 +2,7 @@
 
 This is an initial version that has been tested on ubuntu 16.04 and 17.10 with `arm-none-eabi-gcc` cross compiler.
 
-![demo](https://raw.githubusercontent.com/attdona/riot-code/blob/master/images/riot-code.gif)
+![demo](https://raw.githubusercontent.com/attdona/riot-code/master/images/riot-code.gif)
 
 ## Prerequisite
 
