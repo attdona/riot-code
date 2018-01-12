@@ -1,7 +1,8 @@
 # Change Log
-All notable changes to the "hello" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+## 0.0.2
+- Enhancement: automatic update of tasks.json and c_cpp_properties.json when riot user setting are saved ([@attdona](https://github.com/attdona) in [#1](https://github.com/attdona/riot-code/issues/1)) 
 
-## [Unreleased]
+## 0.0.1 (January 10, 2018)
 - Initial release
+
