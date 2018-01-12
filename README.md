@@ -27,7 +27,7 @@ where *app_name* is the directory basename of `riot.build_dir`.
 
 Select `Tasks->Run Tasks` to run the tasks.
 
-**NOTE**: If you change `riot.board` or/and `riot.build_dir` rerun `RIOT init` command.
+**NOTE**: `c_cpp_properties.json` is automatically adjusted if you change `riot.board` or/and `riot.build_dir`.
 
 Fill an issue or post a PR to help improving the tool.
 
