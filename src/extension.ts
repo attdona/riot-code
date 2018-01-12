@@ -35,7 +35,7 @@ function get_system_includes() {
     const compiler = vscode.workspace.getConfiguration().get('riot.compiler');
 
     // https://stackoverflow.com/questions/17939930/finding-out-what-the-gcc-include-path-is
-    let out = shell.exec(compiler+" -E -Wp,-v -xc /dev/null").stderr
+    let out = shell.exec(compiler + " -E -Wp,-v -xc /dev/null").stderr
 
     let lines = out.split('\n');
     let re = /^(\s)([^\s]+)+$/;
@@ -267,7 +267,8 @@ function setup() {
 export function activate(context: vscode.ExtensionContext) {
 
     vscode.workspace.onDidChangeConfiguration(event => {
-        let affected = event.affectsConfiguration("riot.compiler");
+        let affected = event.affectsConfiguration("riot.compiler") ||
+            event.affectsConfiguration("riot.board");
         if (affected) {
             // rebuild cpp project settings
             setup();
