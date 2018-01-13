@@ -2,7 +2,7 @@
     "name": "riot",
     "displayName": "RIOT",
     "description": "RIOT integrated development for Visual Studio Code",
-    "version": "0.0.2",
+    "version": "0.0.1",
     "publisher": "attdona",
     "license": "MIT",
     "author": {
@@ -62,6 +62,11 @@
                         "type": "string",
                         "description": "verbose output setting",
                         "default": "QUIET=0"
+                    },
+                    "riot.sync_tasks": {
+                        "type": "boolean",
+                        "description": "set to false to disable automatic update of tasks.json",
+                        "default": true
                     }
                 }
             }

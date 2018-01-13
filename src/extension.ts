@@ -267,11 +267,17 @@ function setup() {
 export function activate(context: vscode.ExtensionContext) {
 
     vscode.workspace.onDidChangeConfiguration(event => {
+        const auto_sync = vscode.workspace.getConfiguration().get('riot.sync_tasks');
+
         let affected = event.affectsConfiguration("riot.compiler") ||
             event.affectsConfiguration("riot.board");
         if (affected) {
             // rebuild cpp project settings
             setup();
+        }
+
+        if (auto_sync && event.affectsConfiguration("riot.build_dir")) {
+            build_tasks();
         }
     })
 
