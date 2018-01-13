@@ -2,7 +2,7 @@
     "name": "riot",
     "displayName": "RIOT",
     "description": "RIOT integrated development for Visual Studio Code",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "publisher": "attdona",
     "license": "MIT",
     "author": {
@@ -33,7 +33,6 @@
     "galleryBanner": {
         "color": "#ffdd00"
     },
-
     "activationEvents": [
         "workspaceContains:boards"
     ],
@@ -93,6 +92,6 @@
     },
     "dependencies": {
         "shelljs": "0.7.8",
-        "mkdirp" : "0.5.1"
+        "mkdirp": "0.5.1"
     }
 }
