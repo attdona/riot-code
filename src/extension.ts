@@ -16,7 +16,7 @@ function morph_path(linux_path: string): string {
     let real_path = linux_path.replace(path_re, vscode.workspace.rootPath)
     let sep_re = /\//g;
     real_path = real_path.replace(sep_re, "\\")
-    return real_path    
+    return real_path
 }
 
 function get_defines(riot_build_h_file: string) {
@@ -56,17 +56,25 @@ function get_system_includes() {
     let out = shell.exec("echo | " + compiler + " -E -Wp,-v -xc -").stderr
     let lines = out.split(/\r?\n/);
     let re = /^(\s)+([^\s]+)+$/;
-    
+
     for (let line of lines) {
-         if (match = re.exec(line)) {
+        if (match = re.exec(line)) {
             let pitems = match[2].split('/');
+            let idir: string;
+            if (/^win/.test(process.platform)) {
+                idir = path.join.apply(null, pitems);
+            } else {
+                idir = pitems.reduce((acc, part) => (path.join(acc, part)), path.sep);
+            }
+            try {
+                let stats = fs.lstatSync(idir)
+                if (stats.isDirectory()) {
 
-            let idir = path.join.apply(null, pitems);
+                    sys_includes.add(idir);
+                }
 
-            let stats = fs.lstatSync(idir)
-            if (stats.isDirectory()) {
-                //let idir = pitems.reduce((acc, part) => (path.join(acc, part)), path.sep);
-                sys_includes.add(idir);
+            } catch (err) {
+                console.log(err);
             }
         }
     }
