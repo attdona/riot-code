@@ -7,13 +7,29 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
 import * as shell from 'shelljs';
+import { read } from 'fs';
 
 
-function get_defines(riot_build_h_file) {
+function morph_path(linux_path: string): string {
+    let prjroot = path.basename(vscode.workspace.rootPath)
+    let path_re = new RegExp("^.*" + prjroot);
+    let real_path = linux_path.replace(path_re, vscode.workspace.rootPath)
+    let sep_re = /\//g;
+    real_path = real_path.replace(sep_re, "\\")
+    return real_path    
+}
+
+function get_defines(riot_build_h_file: string) {
     let match: RegExpExecArray;
     let set = new Set();
 
-    var out = shell.cat(riot_build_h_file)
+    // windows?
+    let real_path = riot_build_h_file
+    if (/^win/.test(process.platform)) {
+        real_path = morph_path(riot_build_h_file)
+    }
+
+    var out = shell.cat(real_path)
     //console.log(out);
     let lines = out.split('\n');
     let re = /^(#define[\s]+)([^\s]+)[\s]+([^\s]+)$/;
@@ -35,21 +51,25 @@ function get_system_includes() {
     const compiler = vscode.workspace.getConfiguration().get('riot.compiler');
 
     // https://stackoverflow.com/questions/17939930/finding-out-what-the-gcc-include-path-is
-    let out = shell.exec(compiler + " -E -Wp,-v -xc /dev/null").stderr
+    //let out = shell.exec(compiler + " -E -Wp,-v -xc /dev/null").stderr
 
-    let lines = out.split('\n');
-    let re = /^(\s)([^\s]+)+$/;
-
+    let out = shell.exec("echo | " + compiler + " -E -Wp,-v -xc -").stderr
+    let lines = out.split(/\r?\n/);
+    let re = /^(\s)+([^\s]+)+$/;
+    
     for (let line of lines) {
-        if (match = re.exec(line)) {
-            let pitems = match[2].split(path.sep);
+         if (match = re.exec(line)) {
+            let pitems = match[2].split('/');
 
-            // let idir = path.join.apply(null, pitems);
-            let idir = pitems.reduce((acc, part) => (path.join(acc, part)), path.sep);
-            sys_includes.add(idir);
+            let idir = path.join.apply(null, pitems);
+
+            let stats = fs.lstatSync(idir)
+            if (stats.isDirectory()) {
+                //let idir = pitems.reduce((acc, part) => (path.join(acc, part)), path.sep);
+                sys_includes.add(idir);
+            }
         }
     }
-
     return sys_includes;
 
 }
@@ -217,11 +237,15 @@ function setup() {
     make.stdout.on('data', (data) => {
         let match: RegExpExecArray;
 
-        //let vals = data.toString().match(/(?:-I)([/\w])+/g);
         let re = /(-I)([^\s]+)+/g;
         while (match = re.exec(data.toString())) {
-            //console.log("BINGO:", match);
-            includes.add(match[2].toString());
+            // windows?
+            let real_path = match[2].toString()
+            if (/^win/.test(process.platform)) {
+                real_path = morph_path(real_path)
+            }
+
+            includes.add(real_path)
         }
 
         re = /(-include[\s]+')([^\s']+)+/g;
