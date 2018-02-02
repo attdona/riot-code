@@ -132,10 +132,7 @@ function build_tasks() {
                     "cwd": "${config:riot.build_dir}"
                 },
                 // start the build without prompting for task selection, use "group": "build" otherwise
-                "group": {
-                    "kind": "build",
-                    "isDefault": false
-                },
+                "group": "build",
                 "presentation": {
                     "echo": true,
                     "reveal": "always",
@@ -167,10 +164,7 @@ function build_tasks() {
                     "cwd": "${config:riot.build_dir}"
                 },
                 // start the build without prompting for task selection, use "group": "build" otherwise
-                "group": {
-                    "kind": "build",
-                    "isDefault": false
-                },
+                "group": "build",
                 "presentation": {
                     "echo": true,
                     "reveal": "always",
@@ -230,7 +224,8 @@ function setup() {
                     path: []
                 }
             }
-        ]
+        ],
+        "version": 3
     }
 
     let system_includes = get_system_includes()
