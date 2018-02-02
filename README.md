@@ -19,7 +19,9 @@ Just be sure RIOT build successfully:
 To change these properties:
 * open Settings (keyboard `Ctrl+,` or menu `File->Preferences->Settings`) and search `RIOT-OS` section
 * modify `riot.board` and `riot.build_dir` with your values.
-* change `compiler` value with your toolchain compiler executable (the currently tested cross compilers are `arm-none-eabi-gcc` and `msp430-gcc`)
+* set `compiler` value. The currently tested cross compilers are:
+  * `arm-none-eabi-gcc`
+  * `msp430-gcc`
 
 Press `F1` or `Ctrl+Shift+P` and run the command `RIOT init` to create both the project configuration and the three tasks:
 
