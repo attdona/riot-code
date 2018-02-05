@@ -55,8 +55,6 @@ function get_system_includes() {
     const compiler = vscode.workspace.getConfiguration().get('riot.compiler');
 
     // https://stackoverflow.com/questions/17939930/finding-out-what-the-gcc-include-path-is
-    //let out = shell.exec(compiler + " -E -Wp,-v -xc /dev/null").stderr
-
     let out = shell.exec("echo | " + compiler + " -E -Wp,-v -xc -").stderr
     let lines = out.split(/\r?\n/);
     let re = /^(\s)+([^\s]+)+$/;
@@ -233,7 +231,7 @@ function setup() {
     let includes = new Set();
     // launch.json configuration
     const config = vscode.workspace.getConfiguration();
-    const board = config.get('riot.board');
+    const board: string = config.get('riot.board');
     const app_dir: string = config.get('riot.build_dir');
 
     const compiler: string = config.get('riot.compiler');
@@ -267,74 +265,100 @@ function setup() {
         return
     }
 
-    let make = spawn("make", ["QUIET=0", "BOARD=" + board, "clean", "all"], {
+    let riot_build_h: string = path.join(vscode.workspace.rootPath, app_dir, 'bin', board, 'riotbuild', 'riotbuild.h')
+
+    let make = spawn("make", ["QUIET=0", "BOARD=" + board, "clean", riot_build_h], {
         cwd: path.join(vscode.workspace.rootPath, app_dir)
     });
 
     make.stdout.on('data', (data) => {
-        let match: RegExpExecArray;
+        let message = data.toString()
+    })
 
-        let re = /(-I)([^\s]+)+/g;
-        while (match = re.exec(data.toString())) {
-            // windows?
-            let real_path = match[2].toString()
-            if (/^win/.test(process.platform)) {
-                real_path = morph_path(real_path)
-            }
-
-            includes.add(real_path)
-        }
-
-        re = /(-include[\s]+')([^\s']+)+/g;
-        while (match = re.exec(data.toString())) {
-            let defines = get_defines(match[2]);
-            cpp_settings.configurations[0].defines = [...defines];
-        }
-    });
     make.stderr.on('data', (data) => {
         let message = data.toString()
-
-        console.log(`make stderr:\n${message}`);
-        let re = /.*(The specified board .*) Stop/
-        let match = re.exec(message)
-        if (match) {
-            vscode.window.showErrorMessage(match[1])
-        } else {
-            vscode.window.showErrorMessage(message)
-        }
-
-    });
+    })
 
     make.on('exit', function (code, signal) {
-        console.log('make process exited with ' +
-            `code ${code} and signal ${signal}`);
 
-        for (let item of includes) {
-            cpp_settings.configurations[0].includePath.push(item);
-            cpp_settings.configurations[0].browse.path.push(item);
+        if (code !== 0) {
+            console.log('make riotbuild.h exited with ' +
+            `code ${code} and signal ${signal}`);
+            vscode.window.showErrorMessage("unable to creare riotbuild.h, Makefiles corrupted?")
+            return
         }
 
-        mkdirp(path.join(vscode.workspace.rootPath, ".vscode"), (err) => {
-            if (err) {
-                console.error(err);
-                return;
-            };
-            fs.writeFile(path.join(vscode.workspace.rootPath, ".vscode", "c_cpp_properties.json"), JSON.stringify(cpp_settings, null, 4), (err) => {
+        let make = spawn("make", ["-n", "QUIET=0", "BOARD=" + board, "all"], {
+            cwd: path.join(vscode.workspace.rootPath, app_dir)
+        });
+
+        make.stdout.on('data', (data) => {
+            let match: RegExpExecArray;
+
+            let re = /(-I)([^\s]+)+/g;
+            while (match = re.exec(data.toString())) {
+                // windows?
+                let real_path = match[2].toString()
+                if (/^win/.test(process.platform)) {
+                    real_path = morph_path(real_path)
+                }
+
+                includes.add(real_path)
+            }
+
+            re = /(-include[\s]+')([^\s']+)+/g;
+            while (match = re.exec(data.toString())) {
+                let defines = get_defines(match[2]);
+                cpp_settings.configurations[0].defines = [...defines];
+            }
+        });
+        make.stderr.on('data', (data) => {
+            let message = data.toString()
+
+            console.log(`make stderr:\n${message}`);
+            let re = /.*(The specified board .*) Stop/
+            let match = re.exec(message)
+            if (match) {
+                vscode.window.showErrorMessage(match[1])
+            } else {
+                vscode.window.showErrorMessage(message)
+            }
+
+        });
+
+        make.on('exit', function (code, signal) {
+            console.log('make process exited with ' +
+                `code ${code} and signal ${signal}`);
+
+            for (let item of includes) {
+                cpp_settings.configurations[0].includePath.push(item);
+                cpp_settings.configurations[0].browse.path.push(item);
+            }
+
+            mkdirp(path.join(vscode.workspace.rootPath, ".vscode"), (err) => {
                 if (err) {
                     console.error(err);
-                    //return;
+                    return;
                 };
-                if (late_arrival) {
-                    late_arrival = false
-                    setup()
-                } else {
-                    idle = true
-                }
+                fs.writeFile(path.join(vscode.workspace.rootPath, ".vscode", "c_cpp_properties.json"), JSON.stringify(cpp_settings, null, 4), (err) => {
+                    if (err) {
+                        console.error(err);
+                        //return;
+                    };
+                    if (late_arrival) {
+                        late_arrival = false
+                        setup()
+                    } else {
+                        idle = true
+                    }
+                });
+
             });
 
         });
 
-    });
+    })
+
 
 }
 
@@ -356,7 +380,6 @@ export function activate(context: vscode.ExtensionContext) {
             } else {
                 late_arrival = true;
             }
-
         }
 
         if (auto_sync && event.affectsConfiguration("riot.build_dir")) {

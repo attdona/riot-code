@@ -27,8 +27,6 @@ suite("Extension Tests", () => {
         //let dir = vscode.workspace.getWorkspaceFolder(vscode.Uri.file('boards'))
         //this.timeout(20000);
 
-        console.log("CWD:", process.cwd())
-
         const config = vscode.workspace.getConfiguration();
 
         await config.update('riot.compiler', 'gcc')
@@ -38,8 +36,7 @@ suite("Extension Tests", () => {
 
         //let res = vscode.commands.executeCommand('extension.riotInit')
 
-
-        await sleep(10000)
+        await sleep(2000)
 
         let fname = await vscode.workspace.findFiles('.vscode/c_cpp_properties.json');
 
