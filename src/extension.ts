@@ -227,6 +227,15 @@ function build_tasks() {
     }
 }
 
+function check_for_pending_requests() {
+    if (late_arrival) {
+        late_arrival = false
+        setup()
+    } else {
+        idle = true
+    }
+}
+
 function setup() {
     let includes = new Set();
     // launch.json configuration
@@ -283,8 +292,9 @@ function setup() {
 
         if (code !== 0) {
             console.log('make riotbuild.h exited with ' +
-            `code ${code} and signal ${signal}`);
-            vscode.window.showErrorMessage("unable to creare riotbuild.h, Makefiles corrupted?")
+                `code ${code} and signal ${signal}`);
+            vscode.window.showErrorMessage("unable to creare riotbuild.h, Makefiles corrupted or invalid board?")
+            check_for_pending_requests()
             return
         }
 
@@ -345,12 +355,7 @@ function setup() {
                         console.error(err);
                         //return;
                     };
-                    if (late_arrival) {
-                        late_arrival = false
-                        setup()
-                    } else {
-                        idle = true
-                    }
+                    check_for_pending_requests()
                 });
 
             });
