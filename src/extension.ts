@@ -10,6 +10,10 @@ import * as shell from 'shelljs';
 import { read } from 'fs';
 
 
+let idle = true
+
+let late_arrival = false
+
 function morph_path(linux_path: string): string {
     let prjroot = path.basename(vscode.workspace.rootPath)
     let path_re = new RegExp("^.*" + prjroot);
@@ -82,6 +86,21 @@ function get_system_includes() {
 
 }
 
+function build_dir_exists(build_dir: string): boolean {
+
+    let app_dir = path.join(vscode.workspace.rootPath, build_dir)
+    try {
+        let stats = fs.lstatSync(app_dir)
+        if (!stats.isDirectory()) {
+            throw "not a directory"
+        }
+    } catch (err) {
+        vscode.window.showErrorMessage(`invalid directory ${build_dir}`)
+        return false
+    }
+    return true
+
+}
 
 function build_tasks() {
 
@@ -183,27 +202,31 @@ function build_tasks() {
     // launch.json configuration
     const config = vscode.workspace.getConfiguration();
 
+    const build_dir: string = config.get('riot.build_dir')
     // retrieve values
-    const app_name = path.basename(config.get('riot.build_dir'));
+    const app_name = path.basename(build_dir);
 
-    tasks.tasks[0].label = "build: " + app_name;
-    tasks.tasks[1].label = "flash: " + app_name;
-    tasks.tasks[2].label = "clean: " + app_name;
+    if (build_dir_exists(build_dir)) {
+        tasks.tasks[0].label = "build: " + app_name;
+        tasks.tasks[1].label = "flash: " + app_name;
+        tasks.tasks[2].label = "clean: " + app_name;
 
-    mkdirp(path.join(vscode.workspace.rootPath, ".vscode"), (err) => {
-        if (err) {
-            console.error(err);
-            return;
-        };
-
-        fs.writeFile(path.join(vscode.workspace.rootPath, ".vscode", "tasks.json"), JSON.stringify(tasks, null, 4), (err) => {
+        mkdirp(path.join(vscode.workspace.rootPath, ".vscode"), (err) => {
             if (err) {
                 console.error(err);
                 return;
             };
+
+            fs.writeFile(path.join(vscode.workspace.rootPath, ".vscode", "tasks.json"), JSON.stringify(tasks, null, 4), (err) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                };
+            });
+
         });
 
-    });
+    }
 }
 
 function setup() {
@@ -212,6 +235,13 @@ function setup() {
     const config = vscode.workspace.getConfiguration();
     const board = config.get('riot.board');
     const app_dir: string = config.get('riot.build_dir');
+
+    const compiler: string = config.get('riot.compiler');
+
+    // check compiler
+    if (!shell.which(compiler)) {
+        vscode.window.showErrorMessage(`compiler ${compiler} not found`)
+    }
 
     let cpp_settings = {
         configurations: [
@@ -232,6 +262,10 @@ function setup() {
 
     cpp_settings.configurations[0].includePath = [...system_includes]
     cpp_settings.configurations[0].browse.path = [...system_includes]
+
+    if (!build_dir_exists(app_dir)) {
+        return
+    }
 
     let make = spawn("make", ["QUIET=0", "BOARD=" + board, "clean", "all"], {
         cwd: path.join(vscode.workspace.rootPath, app_dir)
@@ -258,7 +292,17 @@ function setup() {
         }
     });
     make.stderr.on('data', (data) => {
-        console.log(`make stderr:\n${data}`);
+        let message = data.toString()
+
+        console.log(`make stderr:\n${message}`);
+        let re = /.*(The specified board .*) Stop/
+        let match = re.exec(message)
+        if (match) {
+            vscode.window.showErrorMessage(match[1])
+        } else {
+            vscode.window.showErrorMessage(message)
+        }
+
     });
 
     make.on('exit', function (code, signal) {
@@ -278,9 +322,14 @@ function setup() {
             fs.writeFile(path.join(vscode.workspace.rootPath, ".vscode", "c_cpp_properties.json"), JSON.stringify(cpp_settings, null, 4), (err) => {
                 if (err) {
                     console.error(err);
-                    return;
+                    //return;
                 };
-
+                if (late_arrival) {
+                    late_arrival = false
+                    setup()
+                } else {
+                    idle = true
+                }
             });
 
         });
@@ -300,7 +349,14 @@ export function activate(context: vscode.ExtensionContext) {
             event.affectsConfiguration("riot.board");
         if (affected) {
             // rebuild cpp project settings
-            setup();
+
+            if (idle) {
+                idle = false;
+                setup();
+            } else {
+                late_arrival = true;
+            }
+
         }
 
         if (auto_sync && event.affectsConfiguration("riot.build_dir")) {
