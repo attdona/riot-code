@@ -276,6 +276,8 @@ function setup() {
 
     let riot_build_h: string = path.join(vscode.workspace.rootPath, app_dir, 'bin', board, 'riotbuild', 'riotbuild.h')
 
+    let message = `run and check command: **TERMINAL> cd ${app_dir}; make -n BOARD=${board} QUIET=0**`
+
     let make = spawn("make", ["QUIET=0", "BOARD=" + board, "clean", riot_build_h], {
         cwd: path.join(vscode.workspace.rootPath, app_dir)
     });
@@ -285,7 +287,7 @@ function setup() {
     })
 
     make.stderr.on('data', (data) => {
-        let message = data.toString()
+        // do nothing
     })
 
     make.on('exit', function (code, signal) {
@@ -293,7 +295,7 @@ function setup() {
         if (code !== 0) {
             console.log('make riotbuild.h exited with ' +
                 `code ${code} and signal ${signal}`);
-            vscode.window.showErrorMessage("unable to creare riotbuild.h, Makefiles corrupted or invalid board?")
+            vscode.window.showErrorMessage(`unable to create riotbuild.h, ${message}`)
             check_for_pending_requests()
             return
         }
@@ -323,7 +325,6 @@ function setup() {
             }
         });
         make.stderr.on('data', (data) => {
-            let message = data.toString()
 
             console.log(`make stderr:\n${message}`);
             let re = /.*(The specified board .*) Stop/
