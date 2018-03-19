@@ -33,6 +33,31 @@ function build_dir(): string {
   return make_dir
 }
 
+function get_defines(riot_build_h_file: string) {
+    let match: RegExpExecArray;
+    let set = new Set();
+
+    // windows?
+    let real_path = riot_build_h_file
+    if (/^win/.test(process.platform)) {
+        real_path = platformPath(riot_build_h_file, project.workspace_root)
+    }
+
+    var out = shell.cat(real_path)
+    //console.log(out);
+    let lines = out.split('\n');
+    let re = /^(#define[\s]+)([^\s]+)[\s]+([^\s]+)$/;
+
+    for (let line of lines) {
+        if (match = re.exec(line)) {
+            //console.log(`match: ${match[0]} -- <${match[2]}><${match[3]}>`);
+            set.add(match[2] + "=" + match[3]);
+        }
+    }
+
+    return set;
+}
+
 function get_system_includes() {
   let match: RegExpExecArray
   let sys_includes = new Set()
@@ -175,7 +200,7 @@ function build_tasks() {
 
   // launch.json configuration
   const app_name = path.basename(project.app_dir)
-  let dir = build_dir();
+  let dir = build_dir()
 
   if (build_dir_exists(dir)) {
     tasks.tasks[0].label = 'build: ' + app_name
@@ -271,15 +296,15 @@ function setup() {
   )
 
   let riot_build_h_output: shell.ExecOutputReturnValue = shell.exec(
-    `make clean ${riot_build_h}`,
+    `make BOARD=${project.board} clean ${riot_build_h}`,
   )
 
   if (riot_build_h_output.code !== 0) {
     // console.log(riot_build_h_output.code);
     vscode.window.showErrorMessage(
-      `check output with **TERMINAL> cd ${
+      `cd ${
         project.app_dir
-      }; make clean ${riot_build_h}**`,
+      }; make BOARD=${project.board} clean ${riot_build_h}`,
     )
     return
   }
@@ -306,7 +331,8 @@ function setup() {
     cpp_settings.configurations[0].browse.path.push(item)
   }
 
-  let defines = getDefines(make_output.stdout.toString())
+  // let defines = getDefines(make_output.stdout.toString())
+  let defines = get_defines(riot_build_h)
   // console.log(defines);
   cpp_settings.configurations[0].defines = [...defines]
 
@@ -362,7 +388,8 @@ export function activate(context: vscode.ExtensionContext) {
   init_config()
 
   vscode.workspace.onDidChangeConfiguration(event => {
-    const auto_sync = vscode.workspace.getConfiguration().get('riot.sync_tasks')
+    let cfg = vscode.workspace.getConfiguration()
+    const auto_sync = cfg.get('riot.sync_tasks')
 
     let affected =
       event.affectsConfiguration('riot.compiler') ||
@@ -372,6 +399,8 @@ export function activate(context: vscode.ExtensionContext) {
 
       if (idle) {
         idle = false
+        project.board = <string>cfg.get('riot.board')
+        project.compiler = <string>cfg.get('riot.compiler')
         setup()
       } else {
         late_arrival = true
@@ -379,6 +408,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     if (auto_sync && event.affectsConfiguration('riot.build_dir')) {
+      project.app_dir = <string>cfg.get('riot.build_dir')
       build_tasks()
     }
   })

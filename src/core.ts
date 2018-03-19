@@ -24,7 +24,6 @@ export function getIncludes(data: string) {
 
     let re = /(-I)([^\s]+)+/g;
     while (match = re.exec(data.toString())) {
-        // windows?
         let real_path = match[2].toString();
         set.add(real_path);
     }
@@ -38,7 +37,13 @@ export function getDefines(data: string) {
 
     let re = /(-D)([^\s]+)+/g;
     while (match = re.exec(data.toString())) {
-        set.add(match[2]);
+        let sym = match[2];
+        if (/^RIOT_FILE_NOPATH/.test(sym) || /^RIOT_FILE_RELATIVE/.test(sym)) {
+            // do nothing
+        } else {
+            set.add(sym);
+        }
+        
     }
     return set;
 }
