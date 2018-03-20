@@ -34,6 +34,7 @@
         "color": "#ffdd00"
     },
     "activationEvents": [
+        "onCommand:extension.riotInit",
         "workspaceContains:boards"
     ],
     "main": "./out/extension",

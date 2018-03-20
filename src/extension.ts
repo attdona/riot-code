@@ -403,8 +403,6 @@ function init_config() {
         project.workspace_root = folder.uri.path
       }
     }
-  } else {
-    vscode.window.showErrorMessage('RIOT folder must be open')
   }
 
   if (project.workspace_root) {
@@ -415,17 +413,18 @@ function init_config() {
     setup()
     build_tasks()
   } else {
-    vscode.window.showWarningMessage(
+    vscode.window.showErrorMessage(
       'unable to setup anything: open RIOT folder first',
     )
+    return false
   }
+
+  return true
 }
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-  init_config()
-
   vscode.workspace.onDidChangeConfiguration(event => {
     let cfg = vscode.workspace.getConfiguration()
     const auto_sync = cfg.get('riot.sync_tasks')
@@ -457,10 +456,10 @@ export function activate(context: vscode.ExtensionContext) {
   // The commandId parameter must match the command field in package.json
   let disposable = vscode.commands.registerCommand('extension.riotInit', () => {
     // The code you place here will be executed every time your command is executed
-
-    setup()
-
-    build_tasks()
+    if (init_config()) {
+      setup()
+      build_tasks()
+    }
   })
 
   context.subscriptions.push(disposable)
