@@ -7,7 +7,6 @@ import * as fs from 'fs'
 import * as mkdirp from 'mkdirp'
 import * as shell from 'shelljs'
 import { ChildProcess } from 'child_process'
-import { getIncludes, getDefines, platformPath } from './core'
 
 interface Config {
   workspace_root: string
@@ -33,29 +32,62 @@ function build_dir(): string {
   return make_dir
 }
 
+function morph_path(linux_path: string, root_dir: string): string {
+  let prjroot = path.basename(root_dir)
+  let path_re = new RegExp('^.*' + prjroot)
+  let real_path = linux_path.replace(path_re, root_dir)
+  let sep_re = /\//g
+  real_path = real_path.replace(sep_re, '\\')
+  return real_path
+}
+
+export function platformPath(pth: string, root_dir: string): string {
+  if (/^win/.test(process.platform)) {
+    pth = morph_path(pth, root_dir)
+  }
+  return pth
+}
+
+export function get_includes(data: string) {
+  let set: Set<string> = new Set()
+  let match: RegExpExecArray | null
+
+  let re = /(-I)([^\s]+)+/g
+  while ((match = re.exec(data.toString()))) {
+    let real_path = match[2].toString()
+    set.add(real_path)
+  }
+
+  return set
+}
+
 function get_defines(riot_build_h_file: string) {
-    let match: RegExpExecArray;
-    let set = new Set();
+  let match: RegExpExecArray
+  let set = new Set()
 
-    // windows?
-    let real_path = riot_build_h_file
-    if (/^win/.test(process.platform)) {
-        real_path = platformPath(riot_build_h_file, project.workspace_root)
+  if (/gcc$/.test(project.compiler)) {
+    set.add('__GNUC__')
+  }
+
+  // windows?
+  let real_path = riot_build_h_file
+  if (/^win/.test(process.platform)) {
+    real_path = platformPath(riot_build_h_file, project.workspace_root)
+  }
+
+  var out = shell.cat(real_path)
+  //console.log(out);
+  let lines = out.split('\n')
+  let re = /^(#define[\s]+)([^\s]+)[\s]+([^\s]+)$/
+
+  for (let line of lines) {
+    if ((match = re.exec(line))) {
+      //console.log(`match: ${match[0]} -- <${match[2]}><${match[3]}>`);
+      set.add(match[2] + '=' + match[3])
     }
+  }
 
-    var out = shell.cat(real_path)
-    //console.log(out);
-    let lines = out.split('\n');
-    let re = /^(#define[\s]+)([^\s]+)[\s]+([^\s]+)$/;
-
-    for (let line of lines) {
-        if (match = re.exec(line)) {
-            //console.log(`match: ${match[0]} -- <${match[2]}><${match[3]}>`);
-            set.add(match[2] + "=" + match[3]);
-        }
-    }
-
-    return set;
+  return set
 }
 
 function get_system_includes() {
@@ -302,19 +334,26 @@ function setup() {
   if (riot_build_h_output.code !== 0) {
     // console.log(riot_build_h_output.code);
     vscode.window.showErrorMessage(
-      `cd ${
-        project.app_dir
-      }; make BOARD=${project.board} clean ${riot_build_h}`,
+      `cd ${project.app_dir}; make BOARD=${
+        project.board
+      } clean ${riot_build_h}`,
     )
     return
   }
 
-  let make_output: shell.ExecOutputReturnValue | ChildProcess = shell.exec(
+  let make_output: shell.ExecOutputReturnValue = shell.exec(
     `make -n QUIET=0 BOARD=${project.board}`,
     { silent: true },
   )
 
-  includes = getIncludes(make_output.stdout.toString())
+  if (make_output.code != 0) {
+    vscode.window.showErrorMessage(
+      `cd ${project.app_dir}; make -n QUIET=0 BOARD=${project.board}`,
+    )
+    return
+  }
+
+  includes = get_includes(make_output.stdout.toString())
   // console.log(includes.size);
   let idirs = [...includes]
     .sort()
@@ -333,7 +372,7 @@ function setup() {
 
   // let defines = getDefines(make_output.stdout.toString())
   let defines = get_defines(riot_build_h)
-  // console.log(defines);
+
   cpp_settings.configurations[0].defines = [...defines]
 
   mkdirp(path.join(project.workspace_root, '.vscode'), err => {
