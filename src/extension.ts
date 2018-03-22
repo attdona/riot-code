@@ -426,28 +426,26 @@ function init_config() {
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
   vscode.workspace.onDidChangeConfiguration(event => {
-    let cfg = vscode.workspace.getConfiguration()
-    const auto_sync = cfg.get('riot.sync_tasks')
+    if (init_config()) {
+      let cfg = vscode.workspace.getConfiguration()
+      const auto_sync = cfg.get('riot.sync_tasks')
 
-    let affected =
-      event.affectsConfiguration('riot.compiler') ||
-      event.affectsConfiguration('riot.board')
-    if (affected) {
-      // rebuild cpp project settings
-
-      if (idle) {
-        idle = false
-        project.board = <string>cfg.get('riot.board')
-        project.compiler = <string>cfg.get('riot.compiler')
-        setup()
-      } else {
-        late_arrival = true
+      let affected =
+        event.affectsConfiguration('riot.compiler') ||
+        event.affectsConfiguration('riot.board')
+      if (affected) {
+        // rebuild cpp project settings
+        if (idle) {
+          idle = false
+          setup()
+        } else {
+          late_arrival = true
+        }
       }
-    }
 
-    if (auto_sync && event.affectsConfiguration('riot.build_dir')) {
-      project.app_dir = <string>cfg.get('riot.build_dir')
-      build_tasks()
+      if (auto_sync && event.affectsConfiguration('riot.build_dir')) {
+        build_tasks()
+      }
     }
   })
 
