@@ -363,7 +363,7 @@ function setup() {
       path.resolve(
         project.workspace_root,
         project.app_dir,
-        posixToWindows(dir),
+        /^win/.test(process.platform) ? posixToWindows(dir): dir,
       ),
     )
 
