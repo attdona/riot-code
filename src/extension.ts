@@ -7,6 +7,7 @@ import * as fs from 'fs'
 import * as mkdirp from 'mkdirp'
 import * as shell from 'shelljs'
 import { ChildProcess } from 'child_process'
+import { platform } from 'os';
 
 interface Config {
   workspace_root: string
@@ -32,20 +33,20 @@ function build_dir(): string {
   return make_dir
 }
 
-function morph_path(linux_path: string, root_dir: string): string {
-  let prjroot = path.basename(root_dir)
-  let path_re = new RegExp('^.*' + prjroot)
-  let real_path = linux_path.replace(path_re, root_dir)
-  let sep_re = /\//g
-  real_path = real_path.replace(sep_re, '\\')
-  return real_path
+function posixToWindows(pth:string) {
+  let path_re = /(^\/)(\w)(\/.*)/
+  let match = path_re.exec(pth)
+  let result = `${match[2]}:${match[3]}`
+  
+  return result.replace(/\\/g, '/')
 }
 
-export function platformPath(pth: string, root_dir: string): string {
-  if (/^win/.test(process.platform)) {
-    pth = morph_path(pth, root_dir)
-  }
-  return pth
+function windowsToPosix(pth:string) {
+  let path_re = /^(\w):(.*)/
+  let match = path_re.exec(pth)
+  let result = `/${match[1]}${match[2]}`
+
+  return result.replace(/\\/g, '/')
 }
 
 export function get_includes(data: string) {
@@ -72,7 +73,7 @@ function get_defines(riot_build_h_file: string) {
   // windows?
   let real_path = riot_build_h_file
   if (/^win/.test(process.platform)) {
-    real_path = platformPath(riot_build_h_file, project.workspace_root)
+    real_path = posixToWindows(riot_build_h_file)
   }
 
   var out = shell.cat(real_path)
@@ -319,20 +320,22 @@ function setup() {
   shell.cd(make_dir)
 
   let riot_build_h: string = path.join(
-    vscode.workspace.rootPath,
-    project.app_dir,
+    make_dir,
     'bin',
     project.board,
     'riotbuild',
     'riotbuild.h',
   )
 
+  if (/^win/.test(process.platform)) {
+    riot_build_h = windowsToPosix(riot_build_h)
+  }
+
   let riot_build_h_output: shell.ExecOutputReturnValue = shell.exec(
     `make BOARD=${project.board} clean ${riot_build_h}`,
   )
 
   if (riot_build_h_output.code !== 0) {
-    // console.log(riot_build_h_output.code);
     vscode.window.showErrorMessage(
       `cd ${project.app_dir}; make BOARD=${
         project.board
@@ -354,14 +357,13 @@ function setup() {
   }
 
   includes = get_includes(make_output.stdout.toString())
-  // console.log(includes.size);
   let idirs = [...includes]
     .sort()
     .map(dir =>
       path.resolve(
         project.workspace_root,
         project.app_dir,
-        platformPath(dir, project.workspace_root),
+        posixToWindows(dir),
       ),
     )
 
@@ -370,7 +372,6 @@ function setup() {
     cpp_settings.configurations[0].browse.path.push(item)
   }
 
-  // let defines = getDefines(make_output.stdout.toString())
   let defines = get_defines(riot_build_h)
 
   cpp_settings.configurations[0].defines = [...defines]
@@ -400,7 +401,7 @@ function init_config() {
   if (vscode.workspace.workspaceFolders) {
     for (let folder of vscode.workspace.workspaceFolders) {
       if (/RIOT/.test(folder.uri.path)) {
-        project.workspace_root = folder.uri.path
+        project.workspace_root = folder.uri.fsPath
       }
     }
   }
@@ -410,8 +411,6 @@ function init_config() {
     project.board = <string>config.get('riot.board')
     project.app_dir = <string>config.get('riot.build_dir')
     project.compiler = <string>config.get('riot.compiler')
-    setup()
-    build_tasks()
   } else {
     vscode.window.showErrorMessage(
       'unable to setup anything: open RIOT folder first',
