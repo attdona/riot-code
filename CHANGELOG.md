@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.1.0 (April 3, 2018)
+- Code refactoring
+   ([@attdona](https://github.com/attdona) in [#4](https://github.com/attdona/riot-code/issues/4))
+- Bug fixes
+   ([@attdona](https://github.com/attdona) in [#3](https://github.com/attdona/riot-code/issues/3))
+
 ## 0.0.3 (February 2, 2018)
 - Enhancement: Windows platform
   ([@attdona](https://github.com/attdona) in [#2](https://github.com/attdona/riot-code/issues/2))
