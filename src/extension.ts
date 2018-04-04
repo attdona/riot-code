@@ -37,7 +37,7 @@ function posixToWindows(pth:string) {
   let path_re = /(^\/)(\w)(\/.*)/
   let match = path_re.exec(pth)
   let result = `${match[2]}:${match[3]}`
-  
+
   return result.replace(/\\/g, '/')
 }
 
@@ -395,6 +395,8 @@ function setup() {
   })
 }
 
+var old_compiler_path = ""
+
 function init_config() {
   project.workspace_root = ''
 
@@ -411,6 +413,20 @@ function init_config() {
     project.board = <string>config.get('riot.board')
     project.app_dir = <string>config.get('riot.build_dir')
     project.compiler = <string>config.get('riot.compiler')
+
+    let cpath = <string>config.get('riot.compiler_path')
+    if (cpath === "" && old_compiler_path !== "") {
+      let re = new RegExp(`^${old_compiler_path}`)
+      if (re.test(shell.env['PATH'])) {
+        shell.env['PATH'] = shell.env['PATH'].replace(`${old_compiler_path}:`, "")
+      }
+    }
+    if (cpath !== "") {
+      shell.env['PATH'] = `${cpath}:${shell.env['PATH']}`
+    }
+
+    old_compiler_path = cpath
+
   } else {
     vscode.window.showErrorMessage(
       'unable to setup anything: open RIOT folder first',
@@ -430,8 +446,9 @@ export function activate(context: vscode.ExtensionContext) {
       const auto_sync = cfg.get('riot.sync_tasks')
 
       let affected =
-        event.affectsConfiguration('riot.compiler') ||
-        event.affectsConfiguration('riot.board')
+      event.affectsConfiguration('riot.compiler') ||
+      event.affectsConfiguration('riot.compiler_path') ||
+      event.affectsConfiguration('riot.board')
       if (affected) {
         // rebuild cpp project settings
         if (idle) {

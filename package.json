@@ -27,7 +27,7 @@
         "iot",
         "riot"
     ],
-    "preview": true,
+    "preview": false,
     "homepage": "https://github.com/attdona/riot-code",
     "icon": "images/logo.png",
     "galleryBanner": {
@@ -47,6 +47,11 @@
                         "type": "string",
                         "description": "compiler name used for retrieving system includes",
                         "default": "gcc"
+                    },
+                    "riot.compiler_path": {
+                        "type": "string",
+                        "description": "override default compiler configured with PATH env",
+                        "default": ""
                     },
                     "riot.board": {
                         "type": "string",
