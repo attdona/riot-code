@@ -414,15 +414,16 @@ function init_config() {
     project.app_dir = <string>config.get('riot.build_dir')
     project.compiler = <string>config.get('riot.compiler')
 
+    let sep = /^win/.test(process.platform) ? ';' : ':'
     let cpath = <string>config.get('riot.compiler_path')
-    if (cpath === "" && old_compiler_path !== "") {
-      let re = new RegExp(`^${old_compiler_path}`)
+    if (old_compiler_path !== "") {
+      let re = new RegExp(`^${old_compiler_path}${sep}`)
       if (re.test(shell.env['PATH'])) {
-        shell.env['PATH'] = shell.env['PATH'].replace(`${old_compiler_path}:`, "")
+        shell.env['PATH'] = shell.env['PATH'].replace(re, "")
       }
     }
     if (cpath !== "") {
-      shell.env['PATH'] = `${cpath}:${shell.env['PATH']}`
+      shell.env['PATH'] = `${cpath}${sep}${shell.env['PATH']}`
     }
 
     old_compiler_path = cpath
