@@ -1,5 +1,11 @@
 # Change Log
 
+
+## 0.1.1 (April 5, 2018)
+- add toolchain location to PATH
+   ([@attdona](https://github.com/attdona) in [#5](https://github.com/attdona/riot-code/issues/5))
+
+
 ## 0.1.0 (April 3, 2018)
 - Code refactoring
    ([@attdona](https://github.com/attdona) in [#4](https://github.com/attdona/riot-code/issues/4))
