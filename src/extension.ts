@@ -7,13 +7,14 @@ import * as fs from 'fs'
 import * as mkdirp from 'mkdirp'
 import * as shell from 'shelljs'
 import { ChildProcess } from 'child_process'
-import { platform } from 'os';
+import { platform } from 'os'
 
 interface Config {
   workspace_root: string
   app_dir: string
   board: string
   compiler: string
+  compiler_path: string
 }
 
 let idle = true
@@ -25,6 +26,7 @@ let project: Config = {
   app_dir: '',
   board: '',
   compiler: '',
+  compiler_path: '',
 }
 
 function build_dir(): string {
@@ -33,7 +35,7 @@ function build_dir(): string {
   return make_dir
 }
 
-function posixToWindows(pth:string) {
+function posixToWindows(pth: string) {
   let path_re = /(^\/)(\w)(\/.*)/
   let match = path_re.exec(pth)
   let result = `${match[2]}:${match[3]}`
@@ -41,7 +43,7 @@ function posixToWindows(pth:string) {
   return result.replace(/\\/g, '/')
 }
 
-function windowsToPosix(pth:string) {
+function windowsToPosix(pth: string) {
   let path_re = /^(\w):(.*)/
   let match = path_re.exec(pth)
   let result = `/${match[1]}${match[2]}`
@@ -138,13 +140,17 @@ function build_dir_exists(build_dir: string): boolean {
 }
 
 function build_tasks() {
+  let make_cmd =
+    project.compiler_path === ''
+      ? 'make'
+      : 'PATH=${config:riot.compiler_path}:$PATH make'
   let tasks = {
     version: '2.0.0',
     tasks: [
       {
         label: '',
         type: 'shell',
-        command: 'make',
+        command: make_cmd,
         // use options.cwd property if the Makefile is not in the project root ${workspaceRoot} dir
         options: {
           cwd: '${config:riot.build_dir}',
@@ -363,7 +369,7 @@ function setup() {
       path.resolve(
         project.workspace_root,
         project.app_dir,
-        /^win/.test(process.platform) ? posixToWindows(dir): dir,
+        /^win/.test(process.platform) ? posixToWindows(dir) : dir,
       ),
     )
 
@@ -395,7 +401,7 @@ function setup() {
   })
 }
 
-var old_compiler_path = ""
+var old_compiler_path = ''
 
 function init_config() {
   project.workspace_root = ''
@@ -413,21 +419,21 @@ function init_config() {
     project.board = <string>config.get('riot.board')
     project.app_dir = <string>config.get('riot.build_dir')
     project.compiler = <string>config.get('riot.compiler')
+    project.compiler_path = <string>config.get('riot.compiler_path')
 
     let sep = /^win/.test(process.platform) ? ';' : ':'
-    let cpath = <string>config.get('riot.compiler_path')
-    if (old_compiler_path !== "") {
+    // let cpath = <string>config.get('riot.compiler_path')
+    if (old_compiler_path !== '') {
       let re = new RegExp(`^${old_compiler_path}${sep}`)
       if (re.test(shell.env['PATH'])) {
-        shell.env['PATH'] = shell.env['PATH'].replace(re, "")
+        shell.env['PATH'] = shell.env['PATH'].replace(re, '')
       }
     }
-    if (cpath !== "") {
-      shell.env['PATH'] = `${cpath}${sep}${shell.env['PATH']}`
+    if (project.compiler_path !== '') {
+      shell.env['PATH'] = `${project.compiler_path}${sep}${shell.env['PATH']}`
     }
 
-    old_compiler_path = cpath
-
+    old_compiler_path = project.compiler_path
   } else {
     vscode.window.showErrorMessage(
       'unable to setup anything: open RIOT folder first',
@@ -447,9 +453,9 @@ export function activate(context: vscode.ExtensionContext) {
       const auto_sync = cfg.get('riot.sync_tasks')
 
       let affected =
-      event.affectsConfiguration('riot.compiler') ||
-      event.affectsConfiguration('riot.compiler_path') ||
-      event.affectsConfiguration('riot.board')
+        event.affectsConfiguration('riot.compiler') ||
+        event.affectsConfiguration('riot.compiler_path') ||
+        event.affectsConfiguration('riot.board')
       if (affected) {
         // rebuild cpp project settings
         if (idle) {
@@ -460,7 +466,10 @@ export function activate(context: vscode.ExtensionContext) {
         }
       }
 
-      if (auto_sync && event.affectsConfiguration('riot.build_dir')) {
+      affected =
+        event.affectsConfiguration('riot.build_dir') ||
+        event.affectsConfiguration('riot.compiler_path')
+      if (auto_sync && affected) {
         build_tasks()
       }
     }
