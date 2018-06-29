@@ -140,11 +140,13 @@ function build_dir_exists(build_dir: string): boolean {
 }
 
 function build_tasks() {
-  let make_cmd =
+    let make_cmd =
     project.compiler_path === ''
-      ? 'make'
-      : 'PATH=${config:riot.compiler_path}:$PATH make'
-  let tasks = {
+      ? 'make ${config:riot.quiet} BOARD=${config:riot.board}'
+      : 'PATH=${config:riot.compiler_path}:$PATH make ${config:riot.quiet} BOARD=${config:riot.board}'
+ 
+    
+    let tasks = {
     version: '2.0.0',
     tasks: [
       {
@@ -166,8 +168,6 @@ function build_tasks() {
           focus: false,
           panel: 'shared',
         },
-        // arg passing example: in this case is executed make QUIET=0
-        args: ['${config:riot.quiet}', 'BOARD=${config:riot.board}'],
         // Use the standard less compilation problem matcher.
         problemMatcher: {
           owner: 'cpp',
@@ -407,9 +407,13 @@ function init_config() {
   project.workspace_root = ''
 
   if (vscode.workspace.workspaceFolders) {
-    for (let folder of vscode.workspace.workspaceFolders) {
-      if (/RIOT/.test(folder.uri.path)) {
-        project.workspace_root = folder.uri.fsPath
+    if (vscode.workspace.workspaceFolders.length == 1) {
+      project.workspace_root = vscode.workspace.workspaceFolders[0].uri.fsPath
+    } else {
+      for (let folder of vscode.workspace.workspaceFolders) {
+        if (/RIOT/.test(folder.uri.path)) {
+          project.workspace_root = folder.uri.fsPath
+        }
       }
     }
   }
