@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.1.3 (June 29, 2018)
+- Bug fixes
+   ([@attdona](https://github.com/attdona) in [#7](https://github.com/attdona/riot-code/issues/7))
+   ([@attdona](https://github.com/attdona) in [#8](https://github.com/attdona/riot-code/issues/8))
+
 ## 0.1.2 (April 6, 2018)
 - Bug fixes
    ([@attdona](https://github.com/attdona) in [#6](https://github.com/attdona/riot-code/issues/6))
