@@ -144,8 +144,8 @@ function build_tasks() {
     project.compiler_path === ''
       ? 'make ${config:riot.quiet} BOARD=${config:riot.board}'
       : 'PATH=${config:riot.compiler_path}:$PATH make ${config:riot.quiet} BOARD=${config:riot.board}'
- 
-    
+
+
     let tasks = {
     version: '2.0.0',
     tasks: [
@@ -285,7 +285,10 @@ interface CppSettings {
       browse: {
         path: string[]
       }
-    }
+      compilerPath: string
+      cStandard: string
+      cppStandard: string
+  }
   ]
   version: number
 }
@@ -308,9 +311,12 @@ function setup() {
         browse: {
           path: [],
         },
+        compilerPath: shell.which(project.compiler),
+        cStandard: "c11",
+        cppStandard: "c++17"
       },
     ],
-    version: 3,
+    version: 4,
   }
 
   let system_includes = get_system_includes()
@@ -350,16 +356,26 @@ function setup() {
     return
   }
 
-  let make_output: shell.ExecOutputReturnValue = shell.exec(
+  let make_output = shell.ExecOutputReturnValue = shell.exec(
     `make -n QUIET=0 BOARD=${project.board}`,
     { silent: true },
   )
 
   if (make_output.code != 0) {
-    vscode.window.showErrorMessage(
-      `cd ${project.app_dir}; make -n QUIET=0 BOARD=${project.board}`,
+
+    // try again, and for the last time, to run make
+    make_output = shell.ExecOutputReturnValue = shell.exec(
+      `make QUIET=0 BOARD=${project.board}`,
+      { silent: true },
     )
-    return
+
+    if (make_output.code != 0) {
+
+      vscode.window.showErrorMessage(
+        `cd ${project.app_dir}; make QUIET=0 BOARD=${project.board}`,
+      )
+      return
+    }
   }
 
   includes = get_includes(make_output.stdout.toString())
