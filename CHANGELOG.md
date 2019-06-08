@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.1.4 (June 08, 2019)
+- Change request: riot.quiet renamed to riot.make_defs
+   ([@attdona](https://github.com/attdona) in [#10](https://github.com/attdona/riot-code/issues/10))
+
 ## 0.1.3 (June 29, 2018)
 - Bug fixes
    ([@attdona](https://github.com/attdona) in [#7](https://github.com/attdona/riot-code/issues/7))
