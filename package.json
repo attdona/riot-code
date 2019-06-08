@@ -2,7 +2,7 @@
     "name": "riot",
     "displayName": "RIOT",
     "description": "RIOT integrated development for Visual Studio Code",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "publisher": "attdona",
     "license": "MIT",
     "author": {
@@ -63,9 +63,9 @@
                         "description": "make working dir",
                         "default": "examples/hello-world"
                     },
-                    "riot.quiet": {
+                    "riot.make_defs": {
                         "type": "string",
-                        "description": "verbose output setting",
+                        "description": "make command line defines",
                         "default": "QUIET=0"
                     },
                     "riot.sync_tasks": {

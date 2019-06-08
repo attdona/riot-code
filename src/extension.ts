@@ -142,8 +142,8 @@ function build_dir_exists(build_dir: string): boolean {
 function build_tasks() {
     let make_cmd =
     project.compiler_path === ''
-      ? 'make ${config:riot.quiet} BOARD=${config:riot.board}'
-      : 'PATH=${config:riot.compiler_path}:$PATH make ${config:riot.quiet} BOARD=${config:riot.board}'
+      ? 'make ${config:riot.make_defs} BOARD=${config:riot.board}'
+      : 'PATH=${config:riot.compiler_path}:$PATH make ${config:riot.make_defs} BOARD=${config:riot.board}'
 
 
     let tasks = {
@@ -199,7 +199,7 @@ function build_tasks() {
           panel: 'shared',
         },
         // arg passing example: in this case is executed make QUIET=0
-        args: ['${config:riot.quiet}', 'BOARD=${config:riot.board}', 'flash'],
+        args: ['${config:riot.make_defs}', 'BOARD=${config:riot.board}', 'flash'],
         // Use the standard less compilation problem matcher.
         problemMatcher: {
           owner: 'cpp',
@@ -231,7 +231,7 @@ function build_tasks() {
           panel: 'shared',
         },
         // arg passing example: in this case is executed make QUIET=0
-        args: ['${config:riot.quiet}', 'BOARD=${config:riot.board}', 'clean'],
+        args: ['${config:riot.make_defs}', 'BOARD=${config:riot.board}', 'clean'],
         problemMatcher: [],
       },
     ],
