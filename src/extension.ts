@@ -145,6 +145,10 @@ function build_tasks() {
       ? 'make ${config:riot.make_defs} BOARD=${config:riot.board}'
       : 'PATH=${config:riot.compiler_path}:$PATH make ${config:riot.make_defs} BOARD=${config:riot.board}'
 
+      let flash_cmd =
+      project.compiler_path === ''
+        ? 'make ${config:riot.make_defs} BOARD=${config:riot.board} flash'
+        : 'PATH=${config:riot.compiler_path}:$PATH make ${config:riot.make_defs} BOARD=${config:riot.board} flash'
 
     let tasks = {
     version: '2.0.0',
@@ -185,7 +189,7 @@ function build_tasks() {
       {
         label: '',
         type: 'shell',
-        command: 'make',
+        command: flash_cmd,
         // use options.cwd property if the Makefile is not in the project root ${workspaceRoot} dir
         options: {
           cwd: '${config:riot.build_dir}',
@@ -199,7 +203,6 @@ function build_tasks() {
           panel: 'shared',
         },
         // arg passing example: in this case is executed make QUIET=0
-        args: ['${config:riot.make_defs}', 'BOARD=${config:riot.board}', 'flash'],
         // Use the standard less compilation problem matcher.
         problemMatcher: {
           owner: 'cpp',
@@ -217,7 +220,7 @@ function build_tasks() {
       {
         label: '',
         type: 'shell',
-        command: 'make',
+        command: 'make ${config:riot.make_defs} BOARD=${config:riot.board} clean',
         // use options.cwd property if the Makefile is not in the project root ${workspaceRoot} dir
         options: {
           cwd: '${config:riot.build_dir}',
@@ -231,7 +234,6 @@ function build_tasks() {
           panel: 'shared',
         },
         // arg passing example: in this case is executed make QUIET=0
-        args: ['${config:riot.make_defs}', 'BOARD=${config:riot.board}', 'clean'],
         problemMatcher: [],
       },
     ],
