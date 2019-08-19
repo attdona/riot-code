@@ -2,7 +2,7 @@
     "name": "riot",
     "displayName": "RIOT",
     "description": "RIOT integrated development for Visual Studio Code",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "publisher": "attdona",
     "license": "MIT",
     "author": {
@@ -43,6 +43,11 @@
             {
                 "title": "RIOT-OS",
                 "properties": {
+                    "riot.base": {
+                        "type": "string",
+                        "description": "RIOTBASE",
+                        "default": "../.."
+                    },
                     "riot.compiler": {
                         "type": "string",
                         "description": "compiler name used for retrieving system includes",
