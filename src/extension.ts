@@ -6,8 +6,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
 import * as shell from 'shelljs';
-import { ChildProcess } from 'child_process';
-import { platform } from 'os';
 
 interface Config {
   riot_base: string;
@@ -66,7 +64,7 @@ export function get_includes(data: string) {
 
 function get_defines(riot_build_h_file: string) {
   let match: RegExpExecArray;
-  let set = new Set();
+  let set: Set<string> = new Set();
 
   if (/gcc$/.test(project.compiler)) {
     set.add('__GNUC__');
@@ -95,7 +93,7 @@ function get_defines(riot_build_h_file: string) {
 
 function get_system_includes() {
   let match: RegExpExecArray;
-  let sys_includes = new Set();
+  let sys_includes: Set<string> = new Set();
 
   const compiler = vscode.workspace.getConfiguration().get('riot.compiler');
 
@@ -140,23 +138,13 @@ function build_dir_exists(build_dir: string): boolean {
 }
 
 function build_tasks() {
+  let make_str =
+    'make ${config:riot.make_defs} BOARD=${config:riot.board} RIOTBASE=${config:riot.base}';
+
   let make_cmd =
     project.compiler_path === ''
-      ? 'make ${config:riot.make_defs} BOARD=${config:riot.board}'
-      : 'PATH=${config:riot.compiler_path}:$PATH make ${config:riot.make_defs} BOARD=${config:riot.board}';
-
-  let clean_cmd = make_cmd;
-
-  let flash_cmd =
-    project.compiler_path === ''
-      ? 'make ${config:riot.make_defs} BOARD=${config:riot.board} flash'
-      : 'PATH=${config:riot.compiler_path}:$PATH make ${config:riot.make_defs} BOARD=${config:riot.board} flash';
-
-  if (project.riot_base != '') {
-    make_cmd = make_cmd + ' RIOTBASE=${config:riot.base}';
-    clean_cmd = clean_cmd + ' RIOTBASE=${config:riot.base}';
-  }
-  clean_cmd = clean_cmd + ' clean';
+      ? make_str
+      : 'PATH=${config:riot.compiler_path}:$PATH ${make_str}';
 
   let tasks = {
     version: '2.0.0',
@@ -197,7 +185,7 @@ function build_tasks() {
       {
         label: '',
         type: 'shell',
-        command: flash_cmd,
+        command: `${make_cmd} flash`,
         // use options.cwd property if the Makefile is not in the project root ${workspaceRoot} dir
         options: {
           cwd: '${config:riot.build_dir}',
@@ -228,7 +216,7 @@ function build_tasks() {
       {
         label: '',
         type: 'shell',
-        command: clean_cmd,
+        command: `${make_cmd} clean`,
         // use options.cwd property if the Makefile is not in the project root ${workspaceRoot} dir
         options: {
           cwd: '${config:riot.build_dir}',
@@ -304,7 +292,7 @@ interface CppSettings {
 }
 
 function setup() {
-  let includes = new Set();
+  let includes = new Set<string>();
 
   // check compiler
   if (!shell.which(project.compiler)) {
@@ -404,7 +392,7 @@ function setup() {
     cpp_settings.configurations[0].browse.path.push(item);
   }
 
-  let defines = get_defines(riot_build_h);
+  let defines: Set<string> = get_defines(riot_build_h);
 
   cpp_settings.configurations[0].defines = [...defines];
 

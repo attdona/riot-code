@@ -45,7 +45,7 @@
                 "properties": {
                     "riot.base": {
                         "type": "string",
-                        "description": "RIOTBASE",
+                        "description": "RIOT root directory (RIOTBASE)",
                         "default": "../.."
                     },
                     "riot.compiler": {
