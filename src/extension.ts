@@ -53,7 +53,7 @@ export function get_includes(data: string) {
   let set: Set<string> = new Set();
   let match: RegExpExecArray | null;
 
-  let re = /(-I)([^\s]+)+/g;
+  let re = /(-I)(\S+)+/g;
   while ((match = re.exec(data.toString()))) {
     let real_path = match[2].toString();
     set.add(real_path);
@@ -79,7 +79,7 @@ function get_defines(riot_build_h_file: string) {
   var out = shell.cat(real_path);
   //console.log(out);
   let lines = out.split('\n');
-  let re = /^(#define[\s]+)([^\s]+)[\s]+([^\s]+)$/;
+  let re = /^(#define[\s]+)(\S+)[\s]+(\S+)$/;
 
   for (let line of lines) {
     if ((match = re.exec(line))) {
@@ -100,7 +100,7 @@ function get_system_includes() {
   // https://stackoverflow.com/questions/17939930/finding-out-what-the-gcc-include-path-is
   let out = shell.exec('echo | ' + compiler + ' -E -Wp,-v -xc -').stderr;
   let lines = out.split(/\r?\n/);
-  let re = /^(\s)+([^\s]+)+$/;
+  let re = /^(\s)+(\S+)+$/;
 
   for (let line of lines) {
     if ((match = re.exec(line))) {
