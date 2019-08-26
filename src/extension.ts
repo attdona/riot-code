@@ -144,7 +144,7 @@ function build_tasks() {
   let make_cmd =
     project.compiler_path === ''
       ? make_str
-      : 'PATH=${config:riot.compiler_path}:$PATH ${make_str}';
+      : 'PATH=${config:riot.compiler_path}:$PATH ' + make_str;
 
   let tasks = {
     version: '2.0.0',
@@ -286,7 +286,7 @@ interface CppSettings {
       compilerPath: string;
       cStandard: string;
       cppStandard: string;
-    }
+    },
   ];
   version: number;
 }
@@ -342,16 +342,12 @@ function setup() {
   }
 
   let riot_build_h_output: shell.ExecOutputReturnValue = shell.exec(
-    `make BOARD=${project.board} RIOTBASE=${
-      project.riot_base
-    } clean ${riot_build_h}`,
+    `make BOARD=${project.board} RIOTBASE=${project.riot_base} clean ${riot_build_h}`,
   );
 
   if (riot_build_h_output.code !== 0) {
     vscode.window.showErrorMessage(
-      `cd ${project.app_dir}; make BOARD=${project.board} RIOTBASE=${
-        project.riot_base
-      } clean ${riot_build_h}`,
+      `cd ${project.app_dir}; make BOARD=${project.board} RIOTBASE=${project.riot_base} clean ${riot_build_h}`,
     );
     return;
   }
