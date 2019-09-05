@@ -1,5 +1,23 @@
 # Change Log
 
+## 1.0.0 (September 6, 2019)
+- Better intellisense: Remove include basename directory from paths included in
+  browse.path `c_cpp_properties.json` property and provision for user defined browse.path paths.
+
+- Removed automatic update of project configuration when modifyng vscode settings. A new RIOT
+  build configuration (`.vscode/c_cpp_properties.json` and `.vscode/tasks.json`) have to be explicitly
+  triggered by `RIOT init` command.
+
+- Pull Request: regex improvement, many thanks for the contribution to Kees Bakker.
+   ([@keestux](https://github.com/attdona) in [#12](https://github.com/attdona/riot-code/issues/12))
+
+- Bug Fixes: added riot.base property for managing correctly apps external to RIOT.
+    ([@attdona](https://github.com/attdona) in [#11](https://github.com/attdona/riot-code/issues/11))
+
+- Bug Fixes: Setting riot.compiler_path is broken.
+     ([@attdona](https://github.com/attdona) in [#13](https://github.com/attdona/riot-code/issues/13))
+
+
 ## 0.1.5 (June 13, 2019)
 - Bug Fixes: clean and flash commands
    ([@attdona](https://github.com/attdona) in [#10](https://github.com/attdona/riot-code/issues/10))

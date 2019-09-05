@@ -7,6 +7,8 @@ import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
 import * as shell from 'shelljs';
 
+let riot_paths_file: string = 'riot_paths.json';
+
 interface Config {
   riot_base: string;
   app_dir: string;
@@ -26,6 +28,30 @@ let project: Config = {
   compiler: '',
   compiler_path: '',
 };
+
+function config_file_fullname(basename: string): string {
+  return path.join(vscode.workspace.rootPath, '.vscode', riot_paths_file);
+}
+
+function create_riot_paths_file() {
+  let settings = {
+    browse: {
+      path: [],
+    },
+  };
+  let content = JSON.stringify(settings, null, 4);
+  let fullname = config_file_fullname(riot_paths_file);
+
+  if (!fs.existsSync(fullname)) {
+    fs.writeFileSync(fullname, content);
+  }
+}
+
+function read_riot_paths_file() {
+  let fullname = config_file_fullname(riot_paths_file);
+  let content = fs.readFileSync(fullname);
+  return JSON.parse(content.toString());
+}
 
 function build_dir(): string {
   let make_dir = path.join(vscode.workspace.rootPath, project.app_dir);
@@ -286,13 +312,15 @@ interface CppSettings {
       compilerPath: string;
       cStandard: string;
       cppStandard: string;
-    },
+    }
   ];
   version: number;
 }
 
 function setup() {
   let includes = new Set<string>();
+
+  create_riot_paths_file();
 
   // check compiler
   if (!shell.which(project.compiler)) {
@@ -320,7 +348,6 @@ function setup() {
   let system_includes = get_system_includes();
 
   cpp_settings.configurations[0].includePath = [...system_includes];
-  cpp_settings.configurations[0].browse.path = [...system_includes];
 
   let make_dir = build_dir();
   if (!build_dir_exists(make_dir)) {
@@ -360,7 +387,7 @@ function setup() {
   if (make_output.code != 0) {
     // try again, and for the last time, to run make
     make_output = shell.ExecOutputReturnValue = shell.exec(
-      `make QUIET=0 BOARD=${project.board}`,
+      `make QUIET=0 BOARD=${project.board} RIOTBASE=${project.riot_base}`,
       { silent: true },
     );
 
@@ -385,8 +412,16 @@ function setup() {
 
   for (let item of idirs) {
     cpp_settings.configurations[0].includePath.push(item);
-    cpp_settings.configurations[0].browse.path.push(item);
+
+    let path_item = item;
+    if (path.basename(item) === 'include') {
+      path_item = path.dirname(item);
+    }
+    cpp_settings.configurations[0].browse.path.push(path_item);
   }
+  let content = read_riot_paths_file();
+  let user_defined_paths: string[] = content.browse.path;
+  cpp_settings.configurations[0].browse.path.push(...user_defined_paths);
 
   let defines: Set<string> = get_defines(riot_build_h);
 
@@ -442,43 +477,14 @@ function init_config() {
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-  vscode.workspace.onDidChangeConfiguration((event) => {
-    if (init_config()) {
-      let cfg = vscode.workspace.getConfiguration();
-      const auto_sync = cfg.get('riot.sync_tasks');
-
-      let affected =
-        event.affectsConfiguration('riot.compiler') ||
-        event.affectsConfiguration('riot.compiler_path') ||
-        event.affectsConfiguration('riot.board');
-      if (affected) {
-        // rebuild cpp project settings
-        if (idle) {
-          idle = false;
-          setup();
-        } else {
-          late_arrival = true;
-        }
-      }
-
-      affected =
-        event.affectsConfiguration('riot.build_dir') ||
-        event.affectsConfiguration('riot.compiler_path');
-      if (auto_sync && affected) {
-        build_tasks();
-      }
-    }
-  });
-
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with  registerCommand
   // The commandId parameter must match the command field in package.json
   let disposable = vscode.commands.registerCommand('extension.riotInit', () => {
     // The code you place here will be executed every time your command is executed
-    if (init_config()) {
-      setup();
-      build_tasks();
-    }
+    init_config();
+    setup();
+    build_tasks();
   });
 
   context.subscriptions.push(disposable);
