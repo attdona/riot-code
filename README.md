@@ -33,8 +33,8 @@ where *app_name* is the directory basename of `riot.build_dir`.
 
 Select `Tasks->Run Tasks` to run the tasks.
 
-**NOTE**: `c_cpp_properties.json` is automatically adjusted if you change `riot.board` or/and `riot.build_dir`.
+W
 
-Fill an issue or post a PR to help improving the tool.
+**NOTE**: Starting with version 1.0.0 `c_cpp_properties.json` is **NOT MORE** automatically adjusted if you change `riot.board` or/and `riot.build_dir`:
+You need to run `RIOT init` command.
 
-Enjoy RIOT coding with vscode!

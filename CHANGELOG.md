@@ -1,7 +1,9 @@
 # Change Log
 
 ## 1.0.0 (September 6, 2019)
-- Better intellisense: Remove include basename directory from paths included in
+- Progress status notification when creating settings and tasks files.
+
+- Better intellisense: Removed include basename directory from paths included in
   browse.path `c_cpp_properties.json` property and provision for user defined browse.path paths.
 
 - Removed automatic update of project configuration when modifyng vscode settings. A new RIOT
