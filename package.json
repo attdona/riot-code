@@ -17,7 +17,7 @@
         "url": "https://github.com/attdona/riot-code/issues"
     },
     "engines": {
-        "vscode": "^1.19.0"
+        "vscode": "^1.38.0"
     },
     "categories": [
         "Other"
@@ -37,7 +37,7 @@
         "onCommand:extension.riotInit",
         "workspaceContains:boards"
     ],
-    "main": "./out/extension",
+    "main": "./dist/extension",
     "contributes": {
         "configuration": [
             {
@@ -89,20 +89,33 @@
         ]
     },
     "scripts": {
-        "vscode:prepublish": "npm run compile",
+        "vscode:prepublish": "webpack --mode production",
+        "webpack": "webpack --mode development",
+        "webpack-dev": "webpack --mode development --watch",
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "npm run compile && node ./node_modules/vscode/bin/test"
+        "pretest": "npm run compile",
+        "test": "node ./out/test/runTest.js",
+        "test-compile": "tsc -p ./"
     },
     "devDependencies": {
-        "typescript": "^2.6.1",
-        "vscode": "^1.1.6",
-        "@types/node": "^7.0.43",
-        "@types/mocha": "^2.2.42"
+        "@types/glob": "^7.1.1",
+        "@types/mocha": "^5.2.6",
+        "@types/node": "^10.12.21",
+        "@types/shelljs": "^0.7.8",
+        "@types/mkdirp": "^0.5.2",
+        "@types/vscode": "^1.38.0",
+        "glob": "^7.1.4",
+        "mocha": "^6.1.4",
+        "ts-loader": "^6.0.4",
+        "tslint": "^5.12.1",
+        "typescript": "^3.3.1",
+        "vscode-test": "^1.0.2",
+        "webpack": "^4.39.3",
+        "webpack-cli": "^3.3.8"
     },
     "dependencies": {
-        "shelljs": "0.7.8",
-        "mkdirp": "0.5.1"
+        "mkdirp": "^0.5.1",
+        "shelljs": "0.7.8"
     }
 }
