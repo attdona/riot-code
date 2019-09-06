@@ -312,7 +312,7 @@ interface CppSettings {
       compilerPath: string;
       cStandard: string;
       cppStandard: string;
-    }
+    },
   ];
   version: number;
 }
@@ -379,16 +379,19 @@ function setup() {
     return;
   }
 
-  let make_output = (shell.ExecOutputReturnValue = shell.exec(
+  let make_output = shell.exec(
     `make -n QUIET=0 BOARD=${project.board} RIOTBASE=${project.riot_base}`,
-    { silent: true },
-  ));
+  );
 
-  if (make_output.code != 0) {
+  includes = get_includes(make_output.stdout.toString());
+
+  // check if include file list contains same entries
+  // despite make .n returned an error.
+  // this behavior is shown for example by nrf52dk board
+  if (includes.size < 5 && make_output.code != 0) {
     // try again, and for the last time, to run make
-    make_output = shell.ExecOutputReturnValue = shell.exec(
+    make_output = shell.exec(
       `make QUIET=0 BOARD=${project.board} RIOTBASE=${project.riot_base}`,
-      { silent: true },
     );
 
     if (make_output.code != 0) {
@@ -397,9 +400,9 @@ function setup() {
       );
       return;
     }
+    includes = get_includes(make_output.stdout.toString());
   }
 
-  includes = get_includes(make_output.stdout.toString());
   let idirs = [...includes]
     .sort()
     .map((dir) =>
@@ -482,9 +485,30 @@ export function activate(context: vscode.ExtensionContext) {
   // The commandId parameter must match the command field in package.json
   let disposable = vscode.commands.registerCommand('extension.riotInit', () => {
     // The code you place here will be executed every time your command is executed
-    init_config();
-    setup();
-    build_tasks();
+    //init_config();
+    //setup();
+    //build_tasks();
+
+    vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'RIOT setup, please wait ...',
+      },
+      (progress, token) => {
+        progress.report({ increment: 0 });
+
+        var p = new Promise((resolve) => {
+          init_config();
+          build_tasks();
+          setTimeout(() => {
+            setup();
+            resolve();
+          }, 1);
+        });
+
+        return p;
+      },
+    );
   });
 
   context.subscriptions.push(disposable);
