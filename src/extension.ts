@@ -59,6 +59,19 @@ function build_dir(): string {
   return make_dir;
 }
 
+/**
+ * Wrapper to shell.exec
+ *
+ * see: https://github.com/shelljs/shelljs/wiki/Electron-compatibility
+ *
+ */
+function shell_exec(command) {
+  shell.config.execPath = shell.which('node').toString();
+  let out = shell.exec(command);
+
+  return out;
+}
+
 function posixToWindows(pth: string) {
   let path_re = /(^\/)(\w)(\/.*)/;
   let match = path_re.exec(pth);
@@ -124,7 +137,7 @@ function get_system_includes() {
   const compiler = vscode.workspace.getConfiguration().get('riot.compiler');
 
   // https://stackoverflow.com/questions/17939930/finding-out-what-the-gcc-include-path-is
-  let out = shell.exec('echo | ' + compiler + ' -E -Wp,-v -xc -').stderr;
+  let out = shell_exec('echo | ' + compiler + ' -E -Wp,-v -xc -').stderr;
   let lines = out.split(/\r?\n/);
   let re = /^(\s)+(\S+)+$/;
 
@@ -368,7 +381,7 @@ function setup() {
     riot_build_h = windowsToPosix(riot_build_h);
   }
 
-  let riot_build_h_output: shell.ExecOutputReturnValue = shell.exec(
+  let riot_build_h_output: shell.ExecOutputReturnValue = shell_exec(
     `make BOARD=${project.board} RIOTBASE=${project.riot_base} clean ${riot_build_h}`,
   );
 
@@ -379,7 +392,7 @@ function setup() {
     return;
   }
 
-  let make_output = shell.exec(
+  let make_output = shell_exec(
     `make -n QUIET=0 BOARD=${project.board} RIOTBASE=${project.riot_base}`,
   );
 
@@ -390,7 +403,7 @@ function setup() {
   // this behavior is shown for example by nrf52dk board
   if (includes.size < 5 && make_output.code != 0) {
     // try again, and for the last time, to run make
-    make_output = shell.exec(
+    make_output = shell_exec(
       `make QUIET=0 BOARD=${project.board} RIOTBASE=${project.riot_base}`,
     );
 
