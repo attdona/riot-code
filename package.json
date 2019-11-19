@@ -1,121 +1,121 @@
 {
-    "name": "riot",
-    "displayName": "RIOT",
-    "description": "RIOT integrated development for Visual Studio Code",
-    "version": "1.0.0",
-    "publisher": "attdona",
-    "license": "MIT",
-    "author": {
-        "name": "Attilio Donà",
-        "url": "https://github.com/attdona"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/attdona/riot-code"
-    },
-    "bugs": {
-        "url": "https://github.com/attdona/riot-code/issues"
-    },
-    "engines": {
-        "vscode": "^1.38.0"
-    },
-    "categories": [
-        "Other"
+  "name": "riot",
+  "displayName": "RIOT",
+  "description": "RIOT integrated development for Visual Studio Code",
+  "version": "1.0.1",
+  "publisher": "attdona",
+  "license": "MIT",
+  "author": {
+    "name": "Attilio Donà",
+    "url": "https://github.com/attdona"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/attdona/riot-code"
+  },
+  "bugs": {
+    "url": "https://github.com/attdona/riot-code/issues"
+  },
+  "engines": {
+    "vscode": "^1.38.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "c",
+    "iot",
+    "riot"
+  ],
+  "preview": false,
+  "homepage": "https://github.com/attdona/riot-code",
+  "icon": "images/logo.png",
+  "galleryBanner": {
+    "color": "#ffdd00"
+  },
+  "activationEvents": [
+    "onCommand:extension.riotInit",
+    "workspaceContains:boards"
+  ],
+  "main": "./dist/extension",
+  "contributes": {
+    "configuration": [
+      {
+        "title": "RIOT-OS",
+        "properties": {
+          "riot.base": {
+            "type": "string",
+            "description": "RIOT root directory (RIOTBASE)",
+            "default": "../.."
+          },
+          "riot.compiler": {
+            "type": "string",
+            "description": "compiler name used for retrieving system includes",
+            "default": "gcc"
+          },
+          "riot.compiler_path": {
+            "type": "string",
+            "description": "override default compiler configured with PATH env",
+            "default": ""
+          },
+          "riot.board": {
+            "type": "string",
+            "description": "RIOT target board",
+            "default": "native"
+          },
+          "riot.build_dir": {
+            "type": "string",
+            "description": "make working dir",
+            "default": "examples/hello-world"
+          },
+          "riot.make_defs": {
+            "type": "string",
+            "description": "make command line defines",
+            "default": "QUIET=0"
+          },
+          "riot.sync_tasks": {
+            "type": "boolean",
+            "description": "set to false to disable automatic update of tasks.json",
+            "default": true
+          }
+        }
+      }
     ],
-    "keywords": [
-        "c",
-        "iot",
-        "riot"
-    ],
-    "preview": false,
-    "homepage": "https://github.com/attdona/riot-code",
-    "icon": "images/logo.png",
-    "galleryBanner": {
-        "color": "#ffdd00"
-    },
-    "activationEvents": [
-        "onCommand:extension.riotInit",
-        "workspaceContains:boards"
-    ],
-    "main": "./dist/extension",
-    "contributes": {
-        "configuration": [
-            {
-                "title": "RIOT-OS",
-                "properties": {
-                    "riot.base": {
-                        "type": "string",
-                        "description": "RIOT root directory (RIOTBASE)",
-                        "default": "../.."
-                    },
-                    "riot.compiler": {
-                        "type": "string",
-                        "description": "compiler name used for retrieving system includes",
-                        "default": "gcc"
-                    },
-                    "riot.compiler_path": {
-                        "type": "string",
-                        "description": "override default compiler configured with PATH env",
-                        "default": ""
-                    },
-                    "riot.board": {
-                        "type": "string",
-                        "description": "RIOT target board",
-                        "default": "native"
-                    },
-                    "riot.build_dir": {
-                        "type": "string",
-                        "description": "make working dir",
-                        "default": "examples/hello-world"
-                    },
-                    "riot.make_defs": {
-                        "type": "string",
-                        "description": "make command line defines",
-                        "default": "QUIET=0"
-                    },
-                    "riot.sync_tasks": {
-                        "type": "boolean",
-                        "description": "set to false to disable automatic update of tasks.json",
-                        "default": true
-                    }
-                }
-            }
-        ],
-        "commands": [
-            {
-                "command": "extension.riotInit",
-                "title": "RIOT init"
-            }
-        ]
-    },
-    "scripts": {
-        "vscode:prepublish": "webpack --mode production",
-        "webpack": "webpack --mode development",
-        "webpack-dev": "webpack --mode development --watch",
-        "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./",
-        "pretest": "npm run compile",
-        "test": "node ./out/test/runTest.js",
-        "test-compile": "tsc -p ./"
-    },
-    "devDependencies": {
-        "@types/glob": "^7.1.1",
-        "@types/mkdirp": "^0.5.2",
-        "@types/mocha": "^5.2.6",
-        "@types/node": "^10.17.5",
-        "@types/shelljs": "^0.7.8",
-        "@types/vscode": "^1.40.0",
-        "glob": "^7.1.6",
-        "mocha": "^6.2.2",
-        "ts-loader": "^6.2.1",
-        "tslint": "^5.20.1",
-        "typescript": "^3.7.2",
-        "vscode-test": "^1.2.3",
-        "webpack": "^4.41.2",
-        "webpack-cli": "^3.3.10"
-    },
-    "dependencies": {
-        "mkdirp": "^0.5.1",
-        "shelljs": "0.7.8"
-    }
+    "commands": [
+      {
+        "command": "extension.riotInit",
+        "title": "RIOT init"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "webpack --mode production",
+    "webpack": "webpack --mode development",
+    "webpack-dev": "webpack --mode development --watch",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTest.js",
+    "test-compile": "tsc -p ./"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.1.1",
+    "@types/mkdirp": "^0.5.2",
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^10.17.5",
+    "@types/shelljs": "^0.7.8",
+    "@types/vscode": "^1.38.0",
+    "glob": "^7.1.6",
+    "mocha": "^6.2.2",
+    "ts-loader": "^6.2.1",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.2",
+    "vscode-test": "^1.2.3",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
+  },
+  "dependencies": {
+    "mkdirp": "^0.5.1",
+    "shelljs": "0.7.8"
+  }
 }
